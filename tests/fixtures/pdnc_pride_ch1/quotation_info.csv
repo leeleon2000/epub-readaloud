@@ -1,0 +1,7 @@
+quoteID,quoteText,subQuotationList,quoteByteSpans,speaker,addressees,quoteType,referringExpression,mentionTextsList,mentionSpansList,mentionEntitiesList
+Q0,"My dear Mr. Bennet, have you heard that
+Netherfield Park is let at last?","['My dear Mr. Bennet,', 'have you heard that\nNetherfield Park is let at last?']","[[13, 32], [65, 117]]",Mrs. Bennet,['Mr. Bennet'],Anaphoric,,[],[],[]
+Q1,"But it is, for Mrs. Long has just been here, and she
+told me all about it.","['But it is,', 'for Mrs. Long has just been here, and she\ntold me all about it.']","[[158, 168], [185, 248]]",Mrs. Bennet,['Mr. Bennet'],Anaphoric,,[],[],[]
+Q2,Do not you want to know who has taken it?,['Do not you want to know who has taken it?'],"[[280, 321]]",Mrs. Bennet,['Mr. Bennet'],Anaphoric,,[],[],[]
+Q3,"_You_ want to tell me, and I have no objection to hearing it.","['_You_ want to tell me, and I have no objection to hearing it.']","[[353, 414]]",Mr. Bennet,['Mrs. Bennet'],Implicit,,[],[],[]

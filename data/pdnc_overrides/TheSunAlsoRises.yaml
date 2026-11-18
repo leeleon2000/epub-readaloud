@@ -1,0 +1,18 @@
+# Corrections applied to PDNC's The Sun Also Rises at evaluation time (the PDNC files stay untouched).
+# Every entry needs a reason; they are listed in each eval report. See docs/DESIGN.md.
+# 2026-11-14: written from the character table and the text before any run; add more after the first run.
+split:
+  - from: Rafael Romero
+    name: Pedro's Brother
+    aliases: ["Pedro's Brother"]
+    gender: M
+    category: minor
+    reason: PDNC puts Romero's brother and the critic Rafael in one character. In the text the brother is an unnamed banderillero; Rafael is the critic friend Romero calls to at the table
+remove_alias:
+  - character: Jake Barnes
+    alias: _narr
+    reason: a PDNC placeholder alias (the narrator), not a name used in the text
+set:
+  - character: The Concierge
+    gender: F
+    reason: the text says she (she hands the narrator his mail); she is Madame Duzinell; PDNC marks her M

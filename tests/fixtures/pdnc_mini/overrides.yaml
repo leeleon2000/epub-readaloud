@@ -1,0 +1,6 @@
+split:
+  - from: Ann
+    name: Lady Smith
+    aliases: [Lady Smith]
+    gender: F
+    reason: test split

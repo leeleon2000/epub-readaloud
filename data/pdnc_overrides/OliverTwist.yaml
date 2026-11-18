@@ -1,0 +1,7 @@
+# Corrections applied to PDNC's Oliver Twist at evaluation time (the PDNC files stay untouched).
+# Every entry needs a reason; they are listed in each eval report. See docs/DESIGN.md.
+# 2026-11-14: written from the character table and the text before any run; add more after the first run.
+add_alias:
+  - character: Rose Maylie
+    alias: [Rose Fleming]
+    reason: chapter LIII uses her own surname (Rose Fleming); PDNC's alias table does not have it

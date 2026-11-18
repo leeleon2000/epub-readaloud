@@ -1,0 +1,5 @@
+quoteID,quoteText,subQuotationList,quoteByteSpans,speaker,addressees,quoteType,referringExpression,mentionTextsList,mentionSpansList,mentionEntitiesList
+Q0,"Hello there, How are you?","['Hello there,', 'How are you?']","[[13, 25], [38, 50]]",Tom,['Ann'],Explicit,,[],[],[]
+Q1,"Fine,","['Fine,']","[[54, 59]]",Ann,['Tom'],Explicit,,[],[],[]
+Q2,"I am quite well today, thank you kindly.","['I am quite well today, thank you kindly.']","[[73, 94]]",Ann,['Tom'],Implicit,,[],[],[]
+Q3,"Goodbye,","['Goodbye,']","[[130, 138]]",Tom,['Ann'],Explicit,,[],[],[]

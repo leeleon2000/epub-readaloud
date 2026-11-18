@@ -1,0 +1,8 @@
+# Corrections applied to PDNC's The Mysterious Affair at Styles at evaluation time (the PDNC files stay untouched).
+# Every entry needs a reason; they are listed in each eval report. See docs/DESIGN.md.
+# 2026-11-14: written from PDNC's character table before the real-model run (docs/DESIGN.md).
+narrator: Mr. Hastings      # first-person narrator: his own words score as narrator (docs/DESIGN.md)
+remove_alias:
+  - character: Mr. Hastings
+    alias: [_narr, Narr]
+    reason: a PDNC placeholder alias (the narrator), not a name used in the text

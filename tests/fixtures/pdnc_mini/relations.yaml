@@ -1,0 +1,14 @@
+# Hand-made gold relations for the mini PDNC fixture (tests only).
+families:
+  - id: smith
+    spouses: [Tom, Ann]
+    tier: core
+    chapter: 1
+    text: '"Fine," said Ann.'
+    children: []
+relations:
+  - {a: Tom, type: friend_of, b: Bob, tier: stated, chapter: 2, text: '"Goodbye," said Tom.'}
+kin_lookups:
+  - {anchor: Tom, kin: wife, expect: [Ann], chapter: 1, text: '"Fine," said Ann.'}
+wrong:
+  - {a: Tom, type: sibling_of, b: Ann, reason: they are married}

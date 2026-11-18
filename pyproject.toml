@@ -1,0 +1,28 @@
+[project]
+name = "epub-readaloud"
+version = "0.1.0"
+description = "Turn a DRM-free English EPUB into an EPUB 3 read-aloud audiobook: three voices, sentence-level highlighting"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Leon Lee" }]
+requires-python = ">=3.12"
+dependencies = ["lxml>=6", "pysbd>=0.3.4", "pyyaml>=6", "numpy>=2", "soundfile>=0.13", "rapidfuzz>=3"]
+keywords = ["epub", "audiobook", "media-overlays", "tts", "read-aloud"]
+
+[project.optional-dependencies]
+kokoro = ["kokoro"]
+dev = ["pytest"]
+
+[project.scripts]
+readaloud = "pipeline.cli:main"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["pipeline*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

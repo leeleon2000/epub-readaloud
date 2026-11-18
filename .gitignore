@@ -1,0 +1,23 @@
+.DS_Store
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+# generated output
+out/
+mo_test_out/
+mo_test_out_kokoro/
+books/
+*.egg-info/
+# generated test artifacts (regenerate with mo_test_epub.py; files stay on disk)
+codec_compare/
+mo_test/*.epub
+mo_test/timings.json
+# PDNC evaluation data (download with scripts/fetch_pdnc.sh)
+data/pdnc/
+# source EPUBs for held-out validation (Project Gutenberg; not redistributed from this repo)
+data/epub/
+# books to turn into audiobooks (not redistributed) and the finished audiobooks
+data/next/
+data/audiobooks/

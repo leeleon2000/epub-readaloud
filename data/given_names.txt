@@ -1,0 +1,16 @@
+# Common English given names (besides the formal names in nicknames.yaml), used by
+# pipeline/memory/names.py to tell "Lady Catherine" (given name) from "Lady Lucas" (surname).
+# One per line, lowercase. Add names when a book needs them; nickname values count as given names too.
+adelaide agnes alice amelia amy anna anne annabella arabella augusta barbara bertha caroline cecilia
+celia clara clarissa constance cora cordelia diana dinah dora dorothea dorothy edith edna elinor eliza
+ella ellen elsie emma esther ethel eva evelyn fanny flora florence georgina grace gwendolen hannah
+harriet helen henrietta hester honoria ida isabel jemima jessie joan josephine judith julia juliet
+laura lavinia letitia lilian lily lucy louisa lucretia mabel marian marianne maria marie martha
+matilda maud meg mildred miriam nancy olivia penelope phoebe priscilla rachel rosa rosalind rose
+ruth selina sophia sophie susanna sybil teresa ursula violet winifred
+adam alan ambrose amos arthur augustus basil bernard cecil christian clement cuthbert dennis
+dudley ebenezer edgar edmund edwin felix ferdinand gabriel geoffrey gerald gilbert godfrey gregory
+guy herbert horace hugh humphrey isaac ivan jasper jeremy jerome julian lawrence leonard lewis
+lionel luke marcus mark martin maurice miles nathaniel neville noel oliver oscar owen paul percy
+philip ralph randolph reginald roger rupert simon solomon timothy tobias valentine vincent walter
+wilfred

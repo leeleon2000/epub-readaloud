@@ -1,0 +1,53 @@
+# Corrections applied to PDNC's Pride and Prejudice at evaluation time (the PDNC files stay untouched).
+# Every entry needs a reason; they are listed in each eval report. See docs/DESIGN.md.
+split:
+  - from: Charlotte Lucas
+    name: Lady Lucas
+    aliases: [Lady Lucas]
+    gender: F
+    category: minor
+    reason: PDNC lists Lady Lucas as an alias of Charlotte; she is Charlotte's mother and must be a separate person
+remove_alias:
+  - character: Mrs. Bennet
+    alias: Bennet
+    reason: the family's shared surname, not Mrs. Bennet's own
+  - character: Lady Catherine De Bourgh
+    alias: Catherine
+    reason: Kitty's given name is Catherine too (Catherine Bennet)
+  - character: Elizabeth
+    alias: [My Dear Miss Eliza, My Dear Miss Elizabeth, My Dearest Lizzy]
+    reason: a form of address, not a name
+  - character: Jane
+    alias: My Dear Jane
+    reason: a form of address, not a name
+  - character: Madam
+    alias: Madam
+    reason: a form of address (a PDNC placeholder character), not matched against our aliases
+  - character: Sir
+    alias: Sir
+    reason: as above (Madam and Sir are PDNC placeholder characters)
+add_alias:
+  - character: Elizabeth
+    alias: [Elizabeth Bennet, Miss Elizabeth Bennet, Eliza Bennet]
+    reason: the full name in the text; PDNC's alias table has only the short name, our cards often use the full one
+  - character: Jane
+    alias: [Jane Bennet, Miss Jane Bennet]
+    reason: as above
+  - character: Lydia
+    alias: [Lydia Bennet, Miss Lydia Bennet, Miss Lydia]
+    reason: as above
+  - character: Kitty
+    alias: [Kitty Bennet, Catherine Bennet, Miss Kitty]
+    reason: as above; Catherine is her given name
+  - character: Mary
+    alias: [Mary Bennet, Miss Mary]
+    reason: as above
+  - character: Mr. Darcy
+    alias: [Fitzwilliam Darcy]
+    reason: the full name in the text
+  - character: Mrs. Hurst
+    alias: [Louisa Hurst]
+    reason: the full name in the text
+  - character: Miss Bingley
+    alias: [Caroline Bingley]
+    reason: the full name in the text

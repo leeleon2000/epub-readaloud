@@ -1,0 +1,4 @@
+Character ID,Main Name,Aliases,Gender,Category
+0,Tom,"{'Tom', 'Tom Smith'}",M,major
+1,Ann,"{'Ann', 'Lady Smith'}",F,intermediate
+2,Bob,"{'Bob', 'Smith'}",M,minor

@@ -1,0 +1,114 @@
+# Pipeline defaults. A book can override any key in books/<id>/config.yaml.
+# Defaults for every book; a book's own books/<id>/config.yaml overrides them key by key.
+
+tts:
+  adapter: kokoro            # kokoro | drama3 | mock. Keys under tts.<adapter> override the ones here.
+  endpoint: http://localhost:9001
+  voice: af_heart            # Kokoro narrator voice ref (Drama 3 designs its narrator in the cast stage)
+  seed: 1234
+  concurrency: 2             # parallel requests to the TTS service
+  params: {speed: 1.0}
+  drama3:                    # Fish Audio Drama 3 served by vLLM-Omni (docs/MODELS.md)
+    endpoint: http://localhost:8091   # the Drama 3 server; open an SSH tunnel if it runs on another machine
+    model: fishaudio/drama-3
+    concurrency: 16          # the server batches up to max_num_seqs (16) requests: ~10x real time
+    params: {}               # extra request fields (part of the take key)
+    min_chars_per_sec: 5.0   # frame budget per request: room to read the text this slowly; filling it = truncated
+    response_format: flac    # lossless; half the bytes of wav over the tunnel
+    on_runaway: fail         # every seed filled the budget: fail (stop before assemble) | cut (keep the start, list it
+                             # in reports/synth_flagged.tsv; for unattended runs, so one line cannot block the book)
+
+block_mode: sentence          # M1 supports sentence only
+
+pauses: {sentence: 0.35, paragraph: 0.8, heading: 1.0, chapter_lead_in: 0.3}
+
+audio:
+  target_rms_db: -20.0        # chapter RMS target (ACX: -23..-18)
+  peak_db: -3.0               # chapter peak ceiling
+  trim_rel_db: -40.0          # silence threshold relative to take peak
+  trim_margin: 0.03           # seconds kept around speech when trimming
+
+# 2026-11-13: AAC 48k (m4a) and MP3 CBR 64k are verified in sync in Readest on device;
+# Opus plays but its highlight drifts (Ogg seeking in WebKit). Do not use opus.
+output: {format: aac, bitrate: 48k, granularity: sentence,   # fallback: {format: mp3cbr, bitrate: 64k}
+         epubcheck: auto,     # auto = skip (and say so) when epubcheck is not on PATH, e.g. on a GPU host; then `readaloud epubcheck <id>` | on | off
+         encode_jobs: 0}      # chapters encoded at once (0 = one per CPU)
+
+multi_voice: true             # run characters / cast / attribute (M4); false = single narrator
+
+llm:
+  adapter: openai_compat      # openai_compat | mock
+  endpoint: http://localhost:8000/v1   # any OpenAI-compatible server (vLLM, llama.cpp, ...); open an SSH tunnel if it runs elsewhere
+  model: qwen3.6
+  thinking: false
+  temperature: 0.2
+  seed: null                  # set (with temperature: 0) for measurement runs, so reruns give the same answers
+  max_tokens: 8192
+
+character_memory:
+  chunk_words: 1500           # words per LLM chunk (depends on the model's context)
+  chunk_mode: words           # words (default): cut at the first paragraph boundary after chunk_words.
+                              #   scene: wait for the first boundary that is not between two speech paragraphs
+                              #   (voices stage only). It helps the model's raw answers but was not better on
+                              #   final errors across five books (docs/DESIGN.md), so it is optional.
+                              #   A book keeps the chunks it was first given.
+  max_candidates: 20          # candidate cards per chunk
+  profile_max_tokens: 100     # card profile length cap (~4 chars per token)
+  recent_chunks: 3            # short-term memory: characters seen in the last N chunks
+  roster_token_budget: 2000   # send the whole compact roster while it fits
+  resolve_batch: 10           # mentions per resolve call (halved automatically if the output is truncated)
+  roster: v1                  # v1 = characters stage (read and update cards chunk by chunk); v2 = collect + roster (docs/DESIGN.md, in progress)
+  p1_concurrency: 8           # v2 collect: chunks sent to the LLM at once (8 requests gave ~6x throughput on one GPU host)
+  p1_max_tokens: 4000         # v2 collect: output cap per call; a truncated chunk is split in half and retried
+
+attribute:
+  version: v3                 # v3 (default since 2026-11-14) = male / female / narrator voices (stage voices, docs/DESIGN.md); v2 = who speaks (roster + attribute)
+  turns: fix                  # two people talking in turn decide untagged quotes: fix (change the answer) | flag | off
+  card_relations: true        # write strong relations on candidate cards ("wife of C1"); false = the control run of docs/DESIGN.md
+
+voices:                       # attribution v3 (docs/DESIGN.md); used when attribute.version: v3
+  ask: both                   # model question for untagged quotes: none (rules only) | who (a name, gender from genders.yaml) | voice (male/female directly) | both (must agree)
+  second: voice               # the second question (ask: voice / both): voice = male/female directly; notes = `who` again with scene notes of the chunks around and quoted evidence (docs/DESIGN.md; ~2.8x the model time)
+  threshold: 0.7              # voice a quote male/female only at this confidence; below it the narrator reads it (levels: pipeline/v3/decide.py)
+  threshold_first_person: 0.85  # ... in a first-person book: the two questions agreeing is not enough (docs/DESIGN.md)
+  scene: true                 # same-gender exchanges and two-voice turn-taking
+  crowd: 4                    # an exchange with this many people of more than one gender: model answers stay under the threshold (0 = off)
+  vocative: true              # ... unless the previous paragraph addressed the person the model chose (docs/DESIGN.md)
+  narrator_guard: true        # first-person book: the same-gender shortcut never fills the narrator's gender
+  narrator_name_min: 10       # first-person book: the name addressed this often and never a speech tag is the narrator (Jake)
+  concurrency: 8              # chunks sent to the LLM at once
+  max_people: 30              # names offered to the model per chunk
+  first_person_min: 20        # this many "I said" tags make it a first-person book ("I" -> narrator voice)
+
+relations:                    # relation graph (docs/DESIGN.md); thresholds to calibrate on books/pride-full
+  share_min: 0.3              # a weak relation needs >= this share of the passages of the best candidate for the same person and relation
+  anomaly_conflict_ratio: 1.0 # RELATION_ANOMALY when conflicting relations exceed this many times the accepted ones
+  anomaly_max_kin: 16         # ... or one person has family ties to more people than this (pride-full: healthy 11, contaminated 22)
+  anomaly_change: 0.6         # ... or the graph changes by more than this share when the scope grows
+
+cast:
+  designer: auto              # auto (follows tts.adapter) | kokoro-mix | drama3; each has its own cast file
+  default_accent: ""          # e.g. british; per book in books/<id>/config.yaml (Kokoro only)
+  narrator_gender: neutral    # drama3: the narrator voice: neutral (pitch between the male and female voices) | female | male | "" (either)
+  neutral_pitch: [150, 172]   # drama3: median pitch band (Hz) of a neutral voice (a 145-180 band let a 179 Hz, low female, voice through)
+  min_pitch_gap: 0.15         # drama3: every two voices at least this far apart in pitch (log ratio, ~15 %)
+  male_max_pitch: 115         # drama3: the male voice's median pitch at most this (Hz); 128 Hz sounded like a woman (2026-11-17)
+  max_tries: 24               # drama3: zero-shot candidates per voice before keeping the least bad one (~3 in 4 are female; neutral is rarer)
+  design_parallel: 4          # drama3: candidates generated at once
+
+classify:
+  use_llm: true               # sections no rule can decide go to the LLM (only when multi_voice is on)
+
+monitor:                      # warning thresholds (what each warning means: docs/USAGE.md)
+  new_chars_per_chunk_max: 8  # more new characters in one chunk -> CHAR_SPIKE, pause
+  growth_window_chunks: 10    # CHAR_GROWTH compares the last N chunks with the N before
+  section_min_confidence: 0.7 # lower -> section 'uncertain' + SECTION_UNCERTAIN
+  grounding_reject_warn: 3    # more rejected (not in text) mentions in one chunk -> warn
+  unknown_max: 0.2            # share of 'unknown' speakers in a chunk -> ATTRIB_UNKNOWN
+  llm_retries: 3              # backoff retries for connection / timeout / 5xx
+  max_consecutive_failures: 3 # chunks failing in a row -> LLM_DOWN, pause
+  # Repeats (development defaults: strict). A warning is one row per (code, subject); repeats raise its count.
+  no_pause: false             # true = measurement run: pause warnings are recorded but only LLM_DOWN stops
+  repeat_subject_pause: 5     # same warning about the same thing (e.g. the same alias conflict) -> REPEATED, pause
+  repeat_code_pause: 20       # one code raised this often in a run -> REPEATED, pause
+  repeat_code_overrides: {LLM_FAILED: 3}
