@@ -75,13 +75,22 @@ def load_skip(book: Book) -> list[str]:
     return [str(x) for x in (_sections_file(book).get("skip") or [])]
 
 
-def save_overrides(book: Book, data: dict[str, str]) -> None:
-    skip = load_skip(book)
+def _write_sections_file(book: Book, data: dict[str, str], skip: list[str]) -> None:
     sections_path(book).write_text(
         "# Manual section categories (win over rules and the model). Categories:\n"
         f"# {', '.join(sorted(CATEGORIES - {'uncertain'}))}\n"
         "# skip: [sentence ids] = single sentences that are never read (ids as in the page spans, e.g. ab016s00171)\n"
-        + yaml.safe_dump(data, sort_keys=True) + (yaml.safe_dump({"skip": skip}) if skip else ""))
+        + (yaml.safe_dump(data, sort_keys=True) if data else "")       # an empty mapping would be written as "{}"
+        + (yaml.safe_dump({"skip": skip}) if skip else ""))
+
+
+def save_overrides(book: Book, data: dict[str, str]) -> None:
+    _write_sections_file(book, data, load_skip(book))
+
+
+def save_skip(book: Book, skip: list[str]) -> None:
+    """Replace the `skip:` list (the UI's "do not read this line"); the section categories stay as they are."""
+    _write_sections_file(book, load_overrides(book), sorted(set(skip)))
 
 
 def build_sections(con) -> list[dict]:

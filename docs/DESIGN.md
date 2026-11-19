@@ -430,3 +430,30 @@ tags.
 - An answer cut off at the length limit makes the pipeline split the request in half and ask again.
 - Warnings have codes (USAGE.md lists them). A warning that needs a person stops the run with exit code 3
   instead of guessing.
+
+## 10. The browser UI
+
+`readaloud ui` is the command line in a page, for one person on one machine. The rules it keeps:
+
+- **Nothing new is computed.** A view reads a book's database through a read-only connection, so it never waits
+  on a running job. A change is made by the command line itself: a job is one or more `readaloud` commands in a
+  process of its own, and its log shows them. The files a person may edit stay the source of truth; the page is an
+  editor for them.
+- **No dependency and no build step.** The server is Python's `http.server`, as the Kokoro service is; the page is
+  one HTML file, one stylesheet and plain JavaScript. The documents are rendered by a small Markdown converter
+  that covers what they use.
+- **A job outlives the page.** Its state is two files in `books/<id>/ui/`: what was asked and how it ended, and
+  everything it printed. Closing the browser, or the UI server, loses nothing; stages are idempotent, so "continue"
+  is the same job started again. One job per book at a time, and changes that need the database wait for it.
+- **Chapters limit the audio only.** A request for some chapters is two commands: the text stages for the whole
+  book, then synth, assemble and package for those chapters. With `--docs` on the voices stage, a chapter's voices
+  were decided from that chapter alone and a third of its quotations fell back to the narrator.
+- **This machine only.** It listens on 127.0.0.1, answers only requests that name it in their Host header, and
+  accepts a change only with a header the page's own script sends, which a form on another site cannot add. Book
+  ids, file names and stage names from a request are checked against what exists before they reach a command.
+
+The browser tests and the pictures in the documents are one thing: `scripts/ui_demo.py` holds the scenarios,
+`tests/test_ui_browser.py` runs them and checks the files they leave, and the same script records them as GIFs.
+Writing the scenarios as tests found what looking at the page had not: a field wiped by a redraw, a state file
+written by two threads at once, and a scenario that, run on one chapter only, would have shown a voice change
+on the wrong line.

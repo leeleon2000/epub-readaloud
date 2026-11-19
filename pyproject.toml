@@ -13,6 +13,7 @@ keywords = ["epub", "audiobook", "media-overlays", "tts", "read-aloud"]
 [project.optional-dependencies]
 kokoro = ["kokoro"]
 dev = ["pytest"]
+browser = ["playwright"]      # tests/test_ui_browser.py and scripts/ui_demo.py; uses the installed Chrome
 
 [project.scripts]
 readaloud = "pipeline.cli:main"
@@ -23,6 +24,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["pipeline*"]
+
+[tool.setuptools.package-data]
+"pipeline.ui" = ["static/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

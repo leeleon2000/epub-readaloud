@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>readaloud</title>
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/" data-test="nav-library"><span class="logo" aria-hidden="true">&#9654;</span> readaloud</a>
+  <nav>
+    <a href="#/" data-nav="library">Library</a>
+    <a href="#/services" data-nav="services" data-test="nav-services">Models</a>
+    <a href="#/help/USAGE" data-nav="help" data-test="nav-help">Help</a>
+  </nav>
+  <span class="local" title="This page talks only to the readaloud process on this machine. Nothing is uploaded.">this machine only</span>
+</header>
+<main id="app" tabindex="-1"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="/app.js"></script>
+<script src="/panels.js"></script>
+</body>
+</html>

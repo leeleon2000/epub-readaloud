@@ -10,6 +10,9 @@ also has a `mock`, which is how the tests and the quick start in the README run 
 | Kokoro | speech, on a laptop | `tts.adapter: kokoro` | `http://localhost:9001` | a quick, light audiobook |
 | Fish Audio Drama 3 | speech and voice design, on a GPU | `tts.adapter: drama3` | `http://localhost:8091` | the best-sounding result |
 
+The Models page of `readaloud ui` asks each of these addresses once and says which ones the current settings
+need.
+
 If a service runs on another machine, forward its port (`ssh -N -L 8000:localhost:8000 user@gpu-host`) and leave
 the endpoints as they are. For a whole book it is more reliable to run `readaloud` on the GPU machine itself: a
 long-lived tunnel can stall without closing, and a whole book is several hours of requests.

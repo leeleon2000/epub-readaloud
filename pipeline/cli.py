@@ -17,6 +17,7 @@
     readaloud eval <id> --pdnc data/pdnc/BOOK [--chapters 1-13] --tag v1 [--note "..."]
     readaloud eval-compare [BOOK:TAG | path.json ...] [--out FILE]   (no refs: list all results)
     readaloud eval-oracle <id> --pdnc data/pdnc/BOOK [--out ID]      (copy with PDNC's characters; then run attribute)
+    readaloud ui [--port 8765] [--no-browser]                         (the same operations in a browser, on this machine only)
 
 Exit codes: 0 ok, 1 error, 3 paused by a warning (see `readaloud status <id> --json`, docs/USAGE.md).
 """
@@ -102,33 +103,43 @@ def cmd_convert(a) -> None:
         raise SystemExit(f"{failed} book(s) not converted")
 
 
-def run_stages(book: Book, cfg: dict, until: str = "package", log=print, doc_ids: list[int] | None = None,
-               command: str = "run", only: list[str] | None = None) -> str:
-    """Run stages in order (all up to `until`, or just the ones in `only`).
-    Returns 'ok', or 'paused' when a pause warning stopped the run."""
+def planned_stages(cfg: dict, until: str = "package", only: list[str] | None = None) -> list[str]:
+    """The stages a run with this configuration goes through, in order (the command line and the UI share this)."""
     if only:
         bad = [x for x in only if x not in STAGES]
         if bad:
             raise SystemExit(f"unknown stage: {bad[0]} (stages: {', '.join(STAGES)})")
     todo = [st for st in STAGES if st in only] if only else STAGES[: STAGES.index(until) + 1]
+    v2 = cfg["character_memory"].get("roster", "v1") == "v2"
+    v3 = str(cfg.get("attribute", {}).get("version", "v2")) == "v3"
+    out = []
+    for st in todo:
+        named = bool(only and st in only)
+        if st in MULTI_VOICE_ONLY and not cfg.get("multi_voice") and not (st == "cast" and cast.needs_reference(cfg)):
+            continue
+        if st in V2_ONLY and not named and not v2:
+            continue
+        if st in V1_ONLY and v2:
+            continue
+        if st in V3_SKIPS and v3 and not named:
+            continue
+        if st in V3_ONLY and not v3 and not named:
+            continue
+        out.append(st)
+    return out
+
+
+def run_stages(book: Book, cfg: dict, until: str = "package", log=print, doc_ids: list[int] | None = None,
+               command: str = "run", only: list[str] | None = None) -> str:
+    """Run stages in order (all up to `until`, or just the ones in `only`).
+    Returns 'ok', or 'paused' when a pause warning stopped the run."""
+    todo = planned_stages(cfg, until, only)
     con = store.connect(book.dir)
     obs = Observer(book.dir, command, printer=log)
     obs.monitor = cfg.get("monitor", {})
     result = "error"
     try:
         for st in todo:
-            if st in MULTI_VOICE_ONLY and not cfg.get("multi_voice") and not (st == "cast" and cast.needs_reference(cfg)):
-                continue
-            v2 = cfg["character_memory"].get("roster", "v1") == "v2"
-            if st in V2_ONLY and not (only and st in only) and not v2:
-                continue
-            if st in V1_ONLY and v2:
-                continue
-            v3 = str(cfg.get("attribute", {}).get("version", "v2")) == "v3"
-            if st in V3_SKIPS and v3 and not (only and st in only):
-                continue
-            if st in V3_ONLY and not v3 and not (only and st in only):
-                continue
             if st in GATED and obs.open_pauses():
                 w = obs.open_pauses()[0]
                 raise PipelinePaused(w["code"], w["chunk_id"], "open pause warning(s); handle them first "
@@ -617,6 +628,11 @@ def cmd_eval_compare(a) -> None:
         print(md, end="")
 
 
+def cmd_ui(a) -> None:
+    from .ui import server
+    server.serve(Path(a.books) if a.books else BOOKS, a.host, a.port, open_browser=not a.no_browser)
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(prog="readaloud", description="EPUB -> EPUB 3 Media Overlays audiobook")
     ap.add_argument("--books", help="books root (default: ./books)")
@@ -750,6 +766,12 @@ def main(argv=None) -> None:
     p.add_argument("refs", nargs="*", metavar="BOOK:TAG|path.json")
     p.add_argument("--out")
     p.set_defaults(fn=cmd_eval_compare)
+
+    p = sub.add_parser("ui", help="the same operations in a browser (a local web page; nothing leaves this machine)")
+    p.add_argument("--host", default="127.0.0.1", help="address to listen on (default: this machine only)")
+    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--no-browser", action="store_true", help="do not open a browser window")
+    p.set_defaults(fn=cmd_ui)
 
     a = ap.parse_args(argv)
     a.fn(a)

@@ -4,6 +4,8 @@
 smallest thing that works to a whole novel with three voices. What each stage does and why is in
 [DESIGN.md](DESIGN.md); how to serve the models is in [MODELS.md](MODELS.md).
 
+Every step below can also be done in a browser: `readaloud ui` ([step 10](#10-the-same-in-a-browser)).
+
 ## 0. Install
 
 You need Python 3.12 or newer, `ffmpeg` on the PATH, and optionally `epubcheck` (the result is checked with it
@@ -13,7 +15,7 @@ when it is installed).
 git clone <this repository> && cd epub-readaloud
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-python -m pytest -q          # optional: about two minutes, everything should pass
+python -m pytest -q          # optional: about three minutes, everything should pass
 ```
 
 macOS: `brew install ffmpeg epubcheck`. Kindle files (AZW3, MOBI) also need Calibre
@@ -87,6 +89,16 @@ The stages, in order:
 `readaloud run mybook --until segment` stops after a stage; `--stages cast,synth` runs only those. The cast
 stage comes before voices and needs the speech service, so the text-only half of a run is
 `--stages ingest,segment,classify,voices`.
+
+To hear one chapter before the whole book, limit the audio, not the text. `--docs` limits every stage it is given
+to, and the voices stage then decides that chapter's voices from that chapter alone: names and their genders are
+learnt across the book, and on the first chapter of the sample book 13 of 39 quotations lost their voice that way.
+So run the text stages for the whole book, then the audio stages for the chapter:
+
+```bash
+readaloud run mybook --tts kokoro --until voices
+readaloud run mybook --tts kokoro --stages synth,assemble,package --docs 3
+```
 
 ### Looking at what it decided, and changing it
 
@@ -238,3 +250,61 @@ python scripts/youtube_export.py pride --cut "CHAPTER XXIV." --cut "CHAPTER XLII
 cuts fall before encoding.
 Nothing is uploaded. Before publishing, check the book's copyright in the countries where the video will be
 shown and the licence of the speech model, and say that the voices are synthetic.
+
+## 10. The same in a browser
+
+```bash
+readaloud ui                      # opens http://localhost:8765
+readaloud ui --port 9000 --no-browser
+readaloud --books /some/dir ui    # another books folder
+```
+
+It is a page served by a small program on your machine. It listens on this machine only, needs nothing installed
+beyond the pipeline, and uploads nothing. On a GPU machine, start it there and forward the port
+(`ssh -N -L 8765:localhost:8765 user@gpu-host`), then open the same address on your laptop.
+
+![Adding the sample book and running a chapter](img/ui-run.gif)
+
+**Library.** Drop an EPUB (or AZW3, MOBI) to add it; "Add the sample book" adds Alice, which runs with no model.
+
+**Run.** The stages and where the book stands; choose the speech and language models, how far to go, and
+optionally the chapters to make audio for; Start, Stop, and the same button again to carry on. The log is the
+job's own output. A job keeps running when the page, or `readaloud ui` itself, is closed. "Audio for chapters"
+limits the audio only: the text stages always cover the whole book, for the reason given in step 3.
+
+**Warnings.** What stopped a run, what it means, and what to do; acknowledge or resolve it there.
+
+![Changing a line's voice, a name's gender, a line that is not read](img/ui-review.gif)
+
+**Sections, Voices.** What was decided and by what. Change a section's category, untick a single line so that it
+is not read, give a quotation another voice, or settle a name's gender once for the whole book. "Apply" runs the
+voices stage again; answers the model already gave are reused.
+
+![The three voices, a chapter sentence by sentence, a sentence made again](img/ui-listen.gif)
+
+**Cast, Listen.** Play each voice's sample, design another, or keep one. Play a chapter with the sentence being
+read marked, or a single sentence; "Again" and "Differently" make one sentence's audio again (`readaloud regen`,
+the second with `--next-seed`) and put its chapter together.
+
+![Whether the services answer, and video files cut at chosen chapters](img/ui-publish.gif)
+
+**Evaluate, Video, Settings, Models.** Score a book against known speakers and compare two results (steps 7 and
+8); make video files, with the parts shown before anything is encoded (step 9); edit the book's `config.yaml` as a
+form in which every setting is explained; and see whether each model service answers at the address in the
+settings. **Help** is these documents.
+
+| In the page | The file it writes, or the command it runs |
+|---|---|
+| a section's category; a line that is not read | `sections.yaml` |
+| a quotation's voice | `attribution_overrides.csv` |
+| a name's gender | `genders.yaml`, under `manual:` |
+| the three voices | `cast.yaml` or `cast.drama3.yaml`, through `readaloud cast` |
+| settings | the book's `config.yaml`, only what differs from the defaults |
+| Start, Apply, Again, Make the files | `readaloud run`, `readaloud regen`, `scripts/youtube_export.py`, shown in the log |
+
+To let another machine on your network use it, `readaloud ui --host 0.0.0.0`; anyone who can reach that address
+can then run jobs and read the books, so do that only on a network you trust.
+
+The UI's tests run with the rest (`python -m pytest`). The ones that drive a real browser need Playwright
+(`pip install -e ".[browser]"`; it uses the installed Chrome, or `playwright install chromium`) and are skipped
+without it. `python scripts/ui_demo.py` runs the same scenarios and records the pictures on this page.

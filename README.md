@@ -23,6 +23,25 @@ Then put a real voice behind it:
 | A laptop and any OpenAI-compatible language model server | Three voices | [USAGE.md, step 3](docs/USAGE.md#3-three-voices-add-a-language-model) |
 | A GPU machine | Three designed voices with Fish Audio Drama 3 | [USAGE.md, step 4](docs/USAGE.md#4-the-best-voices-drama-3) |
 
+## In a browser
+
+Everything the command line does can be done from a page on your own machine:
+
+```bash
+readaloud ui        # http://localhost:8765, this machine only; nothing is uploaded
+```
+
+![Adding the sample book and running a chapter](docs/img/ui-run.gif)
+
+Add a book, run it and follow the log, see what stopped it, change what it decided, hear the result, make a line
+again, and read the documentation, all in the page. Each change is written to the same file you would edit by
+hand, and each job is the same `readaloud` command, shown in its log.
+
+![Changing a line's voice and a name's gender](docs/img/ui-review.gif)
+
+More of it in [USAGE.md, step 10](docs/USAGE.md#10-the-same-in-a-browser). The pictures are recorded from the
+project's own browser tests (`scripts/ui_demo.py`), so they show operations that are tested.
+
 ## Hear it
 
 Two complete books made with this pipeline and Drama 3 voices, as videos with a caption for every sentence:
@@ -79,7 +98,7 @@ analysis, and the experiments that did not help.
 ## Documentation
 
 - [docs/USAGE.md](docs/USAGE.md): step by step, from the mock run to a whole novel; the files you can edit;
-  what the warnings mean; how to score a book.
+  what the warnings mean; how to score a book; the browser UI.
 - [docs/MODELS.md](docs/MODELS.md): serving the language model, Kokoro and Drama 3; throughput; model licences.
 - [docs/DESIGN.md](docs/DESIGN.md): how each part works, what was measured, what was tried and dropped, known
   open issues.
